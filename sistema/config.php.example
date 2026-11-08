@@ -1,0 +1,24 @@
+<?php
+// ── BANCO ──────────────────────────────────────────────────
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'PREENCHER');
+define('DB_USER', 'PREENCHER');
+define('DB_PASS', 'PREENCHER');
+
+// ── APP ────────────────────────────────────────────────────
+define('APP_NAME', 'Sistema Opa Design');
+define('APP_URL',  'https://sistema.opadesign.com.br'); // sem barra final
+
+// ── ASAAS ──────────────────────────────────────────────────
+// Gere seu token em: conta.asaas.com → Configurações → Integrações
+define('ASAAS_KEY', 'PREENCHER');
+define('ASAAS_SANDBOX', true); // false em produção
+define('ASAAS_URL', ASAAS_SANDBOX
+    ? 'https://sandbox.asaas.com/api/v3'
+    : 'https://api.asaas.com/api/v3');
+
+// ── PLANOS ─────────────────────────────────────────────────
+define('TRIAL_DAYS', 7);
+
+// ── WEBHOOK SECRET (crie uma string aleatória) ─────────────
+define('WEBHOOK_SECRET', 'PREENCHER');

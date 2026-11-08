@@ -1,0 +1,7 @@
+# Senhas e chaves: ficam só no servidor (cada um tem um .example com o formato)
+sistema/config.php
+sistema/2_captcha.php
+sistema/5_ip_guard.php
+sistema/uploads/
+sistema/prospeccao/logs/*
+!sistema/prospeccao/logs/.gitkeep

@@ -1,0 +1,32 @@
+/* Menu lateral Opa — fixo a partir de 900px, gaveta (☰) abaixo disso */
+:root{--ml-w:232px;--ml-top:64px}
+.ml-toggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;margin-right:10px;flex:0 0 auto;
+  background:transparent;border:1px solid var(--border,#2a2a2a);border-radius:8px;color:var(--text,#e8eaf0);font-size:1.25rem;line-height:1;cursor:pointer}
+.ml-toggle:hover{background:var(--surface2,#1e1e1e)}
+.ml-back{display:none}
+.ml-side{display:flex!important;flex-direction:column!important;gap:2px!important;position:fixed;left:0;top:var(--ml-top);bottom:0;width:var(--ml-w);
+  padding:14px 10px!important;overflow-y:auto!important;overflow-x:hidden;background:var(--surface,#141414);
+  border-right:1px solid var(--border,#2a2a2a);border-bottom:0!important;z-index:90;margin:0}
+.ml-side>*{display:flex!important;align-items:center;gap:8px;width:100%;text-align:left;justify-content:flex-start;white-space:normal;
+  padding:11px 14px!important;border-radius:8px;border:0!important;border-left:3px solid transparent!important;
+  background:transparent;color:var(--muted,#8a8a8a);font-family:inherit;font-size:.9rem;font-weight:500;cursor:pointer;text-decoration:none;position:relative}
+.ml-side>*:hover{background:var(--surface2,#1e1e1e);color:var(--text,#e8eaf0)}
+.ml-side>.active{background:var(--surface2,#1e1e1e);color:var(--accent,#78be20);border-left-color:var(--accent,#78be20)!important;font-weight:600}
+.ml-sep{height:1px;background:var(--border,#2a2a2a);margin:8px 4px;padding:0!important;min-height:1px;width:auto!important}
+body.ml-on>main,body.ml-on>.ml-shift{margin-left:var(--ml-w)!important;max-width:none!important}
+@media (max-width:899px){
+  .ml-toggle{display:inline-flex}
+  .ml-side{top:0;width:min(280px,84vw);padding-top:18px!important;transform:translateX(-102%);transition:transform .22s ease;z-index:300;box-shadow:none}
+  body.ml-open .ml-side{transform:none;box-shadow:6px 0 28px rgba(0,0,0,.45)}
+  .ml-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:250;opacity:0;pointer-events:none;transition:opacity .2s;display:block}
+  body.ml-open .ml-back{opacity:1;pointer-events:auto}
+  body.ml-open{overflow:hidden}
+  body.ml-on>main,body.ml-on>.ml-shift{margin-left:auto!important;max-width:100%!important}
+}
+@media (min-width:900px) and (max-width:1500px){
+  body.ml-on .stats{grid-template-columns:repeat(3,1fr)!important}
+}
+/* Grades inline dos painéis: uma coluna no celular */
+@media (max-width:700px){
+  [style*="grid-template-columns:1fr 160px auto"],[style*="grid-template-columns:1fr 1fr"],[style*="grid-template-columns:repeat(3,1fr)"],[style*="grid-template-columns:2fr 1fr"]{grid-template-columns:1fr!important}
+}

@@ -1,0 +1,170 @@
+<?php
+/**
+ * MÓDULO 5 — Proteção da Rota /superadmin.php por IP
+ * Opa Studio Security — PHP Puro
+ * 
+ * Coloque require 'security/5_ip_guard.php'; como PRIMEIRA LINHA do superadmin.php
+ * 
+ * OPÇÕES DISPONÍVEIS:
+ *  A) Whitelist de IPs fixos (mais seguro)
+ *  B) Proteção por senha HTTP Basic (fallback para IP dinâmico)
+ *  C) Ambos combinados
+ */
+
+// ─── Configuração ─────────────────────────────────────────────────────────────
+
+/**
+ * OPÇÃO A — IPs permitidos (IPv4 e IPv6)
+ * Descubra seu IP em: https://meuip.com.br
+ * 
+ * Suporta:
+ *  - IP exato:     '179.x.x.x'
+ *  - Faixa CIDR:   '179.x.x.0/24'  (toda a faixa da sua operadora)
+ */
+$ALLOWED_IPS = [
+    '179.98.140.220',          // localhost (desenvolvimento)
+    '::179.98.140.220',                // localhost IPv6
+    // Adicione aqui seu IP ou faixa:
+    // '179.xxx.xxx.xxx',
+    // '179.xxx.xxx.0/24',
+];
+
+/**
+ * OPÇÃO B — Senha HTTP Basic (caso seu IP seja dinâmico)
+ * Acesso via: https://sistema.opadesign.com.br/superadmin.php
+ * O navegador pedirá usuário e senha antes de carregar a página.
+ */
+define('ADMIN_HTTP_USER',     'opaadmin');              // mude isto
+define('ADMIN_HTTP_PASSWORD', 'PREENCHER');      // mude para senha forte
+
+/**
+ * OPÇÃO ATIVA: 'ip', 'basic', ou 'both'
+ * 'both' = só acessa quem tem IP liberado E conhece a senha
+ */
+define('GUARD_MODE', 'both');
+
+// ─── Funções de proteção ──────────────────────────────────────────────────────
+
+function guardSuperAdmin(): void {
+    $ip = getClientIp();
+
+    if (GUARD_MODE === 'ip' || GUARD_MODE === 'both') {
+        if (!isIpAllowed($ip)) {
+            logBlockedAccess($ip, 'IP_NOT_ALLOWED');
+            denyAccess('Acesso negado. Seu IP não está autorizado.');
+        }
+    }
+
+    if (GUARD_MODE === 'basic' || GUARD_MODE === 'both') {
+        if (!isHttpAuthValid()) {
+            requireHttpAuth();
+        }
+    }
+}
+
+/**
+ * Verifica se o IP do cliente está na whitelist
+ */
+function isIpAllowed(string $ip): bool {
+    global $ALLOWED_IPS;
+
+    foreach ($ALLOWED_IPS as $allowed) {
+        // IP exato
+        if ($ip === $allowed) return true;
+
+        // CIDR range (ex: 179.x.x.0/24)
+        if (strpos($allowed, '/') !== false && ipInCidr($ip, $allowed)) return true;
+    }
+    return false;
+}
+
+/**
+ * Verifica se IP está dentro de um bloco CIDR
+ */
+function ipInCidr(string $ip, string $cidr): bool {
+    [$subnet, $bits] = explode('/', $cidr);
+    $ip     = ip2long($ip);
+    $subnet = ip2long($subnet);
+    if ($ip === false || $subnet === false) return false;
+    $mask = ~((1 << (32 - (int)$bits)) - 1);
+    return ($ip & $mask) === ($subnet & $mask);
+}
+
+/**
+ * Obtém IP real do cliente (trata proxies/Cloudflare)
+ */
+function getClientIp(): string {
+    $headers = [
+        'HTTP_CF_CONNECTING_IP',    // Cloudflare
+        'HTTP_X_FORWARDED_FOR',     // proxy
+        'HTTP_X_REAL_IP',
+        'REMOTE_ADDR',              // direto
+    ];
+
+    foreach ($headers as $header) {
+        if (!empty($_SERVER[$header])) {
+            $ips = explode(',', $_SERVER[$header]);
+            $ip  = trim($ips[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
+    }
+    return '0.0.0.0';
+}
+
+/**
+ * Verifica credenciais HTTP Basic Auth
+ */
+function isHttpAuthValid(): bool {
+    $user = $_SERVER['PHP_AUTH_USER'] ?? '';
+    $pass = $_SERVER['PHP_AUTH_PW']   ?? '';
+    return $user === ADMIN_HTTP_USER &&
+           hash_equals(ADMIN_HTTP_PASSWORD, $pass);
+}
+
+/**
+ * Solicita autenticação HTTP Basic
+ */
+function requireHttpAuth(): void {
+    header('WWW-Authenticate: Basic realm="Opa Studio — Admin"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo 'Acesso restrito. Autenticação necessária.';
+    exit;
+}
+
+/**
+ * Bloqueia e encerra execução
+ */
+function denyAccess(string $message = 'Forbidden'): void {
+    http_response_code(403);
+    echo '<h1>403 — Acesso Negado</h1><p>' . htmlspecialchars($message) . '</p>';
+    exit;
+}
+
+/**
+ * Registra tentativas bloqueadas
+ */
+function logBlockedAccess(string $ip, string $reason): void {
+    $logFile = __DIR__ . '/logs/blocked_access.log';
+    $dir     = dirname($logFile);
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
+
+    $line = sprintf(
+        "[%s] IP=%s | MOTIVO=%s | URL=%s | UA=%s\n",
+        date('Y-m-d H:i:s'),
+        $ip,
+        $reason,
+        $_SERVER['REQUEST_URI'] ?? '-',
+        $_SERVER['HTTP_USER_AGENT'] ?? '-'
+    );
+    file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+}
+
+// ─── ATIVA A PROTEÇÃO IMEDIATAMENTE ──────────────────────────────────────────
+guardSuperAdmin();
+
+// ─── COMO USAR ────────────────────────────────────────────────────────────────
+// Adicione como PRIMEIRA LINHA do superadmin.php:
+//
+//   <?php
+//   require __DIR__ . '/security/5_ip_guard.php';
+//   // ... resto do superadmin.php

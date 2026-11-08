@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Opa Design — Comunicação e Design | Florianópolis</title>
+<meta name="description" content="Agência de comunicação e design em Florianópolis. Gestão de redes sociais, criação de sites, tráfego pago e o Opa Studio — plataforma de gestão de criativos.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{
+  brand:'#78be20','brand-dark':'#5a9a18',
+  bg:'#0B0F14',surface:'#111820',card:'#161E28',border:'#1E2A38',
+  tp:'#F0F4F8',ts:'#8A9BB0',tm:'#4A5A6E'
+}}}}
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:#0B0F14}
+body{background:#0B0F14;color:#F0F4F8;font-family:'DM Sans',sans-serif;overflow-x:hidden;line-height:1.6}
+.fd{font-family:'Syne',sans-serif}
+.fm{font-family:'JetBrains Mono',monospace}
+
+/* Noise texture */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.022;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* Grid lines */
+.gbg{background-image:linear-gradient(rgba(30,42,56,.3) 1px,transparent 1px),linear-gradient(90deg,rgba(30,42,56,.3) 1px,transparent 1px);background-size:64px 64px}
+
+/* Glow */
+.glow{box-shadow:0 0 60px rgba(120,190,32,.09)}
+.glow-lg{box-shadow:0 0 100px rgba(120,190,32,.06)}
+
+/* Gradient text */
+.gt{background:linear-gradient(135deg,#78be20,#5a9a18);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Section tag */
+.stag{display:inline-flex;align-items:center;gap:.5rem;background:rgba(120,190,32,.08);border:1px solid rgba(120,190,32,.18);color:#78be20;padding:.3rem 1rem;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:2px;text-transform:uppercase}
+
+/* Card */
+.crd{background:#161E28;border:1px solid #1E2A38;border-radius:1.25rem;transition:border-color .25s,transform .25s}
+.crd:hover{border-color:rgba(120,190,32,.25);transform:translateY(-4px)}
+
+/* Buttons */
+.bp{background:#78be20;color:#0B0F14;font-family:'Syne',sans-serif;font-weight:700;border-radius:.75rem;padding:.875rem 2rem;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .2s;white-space:nowrap}
+.bp:hover{background:#5a9a18;transform:translateY(-2px);box-shadow:0 8px 28px rgba(120,190,32,.28)}
+.bg2{border:1px solid #1E2A38;color:#F0F4F8;font-family:'Syne',sans-serif;font-weight:600;border-radius:.75rem;padding:.875rem 2rem;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .2s;white-space:nowrap}
+.bg2:hover{border-color:#4A5A6E;background:#161E28}
+.bwa{background:#25D366;color:#fff;font-family:'Syne',sans-serif;font-weight:700;border-radius:.75rem;padding:.875rem 2rem;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;transition:all .2s}
+.bwa:hover{background:#1eb357;transform:translateY(-2px)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes scan{0%{top:0}100%{top:100%}}
+.af{animation:floatY 5s ease-in-out infinite}
+.ap{animation:pulse 2.5s ease-in-out infinite}
+.scan-l{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(120,190,32,.25),transparent);animation:scan 3s linear infinite;pointer-events:none}
+
+/* Scroll reveal */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.rv.on{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+
+/* Accent bar */
+.abar{position:absolute;top:0;left:0;right:0;height:2.5px}
+
+/* Nav blur */
+nav{background:rgba(11,15,20,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+
+/* Hamburger */
+.ham{display:none;flex-direction:column;gap:5px;background:transparent;border:1px solid #1E2A38;border-radius:8px;padding:7px 9px;cursor:pointer;transition:border-color .2s}
+.ham:hover{border-color:#78be20}
+.ham span{display:block;width:18px;height:2px;background:#F0F4F8;border-radius:2px;transition:all .25s}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0;transform:translateX(8px)}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Mobile menu */
+.mmenu{display:none;position:fixed;top:64px;inset-x:0;z-index:48;
+  background:rgba(11,15,20,.97);backdrop-filter:blur(20px);
+  flex-direction:column;border-bottom:1px solid #1E2A38;
+  animation:fadeUp .2s ease}
+.mmenu.open{display:flex}
+.mmenu a{padding:1rem 1.5rem;color:#8A9BB0;font-size:.95rem;font-weight:500;text-decoration:none;
+  border-bottom:1px solid rgba(30,42,56,.6);transition:color .2s;display:block}
+.mmenu a:hover{color:#F0F4F8}
+.mmenu a:last-child{border:none}
+.mmenu .mm-cta{background:#78be20;color:#0B0F14;font-family:'Syne',sans-serif;font-weight:700;
+  margin:.75rem 1.25rem;border-radius:.75rem;text-align:center;padding:.875rem;border:none}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0B0F14}
+::-webkit-scrollbar-thumb{background:#1E2A38;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#78be20}
+
+
+.nav-logo-img{height:52px;width:auto;object-fit:contain;display:block;max-width:200px;transition:opacity .2s}
+.nav-logo-img:hover{opacity:.85}
+@media(max-width:1024px){.nav-logo-img{height:44px;max-width:172px}}
+@media(max-width:768px){.nav-logo-img{height:36px;max-width:150px}}
+@media(max-width:400px){.nav-logo-img{height:30px;max-width:120px}}
+
+/* ══════════════ RESPONSIVE ══════════════ */
+@media(max-width:1024px){
+  .lg-hide{display:none!important}
+  .hero-wrap{flex-direction:column!important;gap:3rem!important}
+  .hero-copy{max-width:100%!important}
+  .mockup-wrap{width:100%!important;max-width:540px;margin:0 auto}
+  .stats-g{grid-template-columns:repeat(2,1fr)!important}
+  .clients-g{display:none!important}
+}
+
+@media(max-width:768px){
+  /* Nav */
+  .nav-d{display:none!important}
+  .ham{display:flex!important}
+  .nav-cta-d{display:none!important}
+
+  /* Type scale */
+  h1{font-size:clamp(2.2rem,9vw,3.2rem)!important;line-height:.92!important}
+  h2{font-size:clamp(1.8rem,7vw,2.4rem)!important;line-height:1.05!important}
+
+  /* Layout */
+  .sec{padding-top:3.5rem!important;padding-bottom:3.5rem!important}
+  .wrap{padding-left:1.25rem!important;padding-right:1.25rem!important}
+
+  /* Grids → 1 col */
+  .g3{grid-template-columns:1fr!important}
+  .g2{grid-template-columns:1fr!important}
+  .g4{grid-template-columns:1fr 1fr!important}
+  .g5{grid-template-columns:1fr 1fr!important}
+
+  /* Botões hero: coluna */
+  .hbtns{flex-direction:column!important;align-items:stretch!important}
+  .hbtns a{justify-content:center!important;text-align:center!important;width:100%!important}
+
+  /* Stats 2x2 */
+  .stats-row{grid-template-columns:1fr 1fr!important}
+
+  /* Serviços card full */
+  .srv-grid{grid-template-columns:1fr!important}
+
+  /* Depoimentos 1 col */
+  .dep-g{grid-template-columns:1fr!important}
+
+  /* Studio section */
+  .studio-wrap{flex-direction:column!important;gap:2.5rem!important}
+
+  /* Footer */
+  .ft-grid{grid-template-columns:1fr!important;gap:2rem!important}
+  .ft-bot{flex-direction:column!important;text-align:center!important;gap:.5rem!important}
+
+  /* Reveal sem delay no mobile */
+  .d1,.d2,.d3{transition-delay:0s!important}
+
+  /* CTA buttons */
+  .cta-btns{flex-direction:column!important;align-items:center!important}
+  .cta-btns a{width:100%;max-width:360px;justify-content:center}
+}
+
+@media(max-width:480px){
+  .g4{grid-template-columns:1fr 1fr!important}
+  .stats-row{grid-template-columns:1fr 1fr!important}
+  .audience-g{grid-template-columns:1fr 1fr!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ NAV ══════════════════ -->
+<nav class="fixed top-0 inset-x-0 z-50 border-b border-border/50">
+  <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2 flex-shrink-0">
+      <img src="/logo_opa.jpg" alt="Opa Design" class="h-9 w-auto rounded object-contain" onerror="this.style.display='none'">
+    </a>
+
+    <!-- Desktop links -->
+    <div class="nav-d flex items-center gap-6">
+      <a href="#sobre" class="text-ts hover:text-tp text-sm transition-colors">Sobre</a>
+      <a href="#servicos" class="text-ts hover:text-tp text-sm transition-colors">Serviços</a>
+      <a href="#studio" class="text-ts hover:text-tp text-sm transition-colors">Opa Studio</a>
+      <a href="#depoimentos" class="text-ts hover:text-tp text-sm transition-colors">Cases</a>
+      <a href="#contato" class="text-ts hover:text-tp text-sm transition-colors">Contato</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="#contato" class="nav-cta-d bp text-sm px-5 py-2.5">Fale conosco</a>
+      <button class="ham" id="hamBtn" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mmenu" id="mobMenu">
+  <a href="#sobre" onclick="closeMenu()">Sobre a Opa Design</a>
+  <a href="#servicos" onclick="closeMenu()">Serviços</a>
+  <a href="#studio" onclick="closeMenu()">Opa Studio</a>
+  <a href="#depoimentos" onclick="closeMenu()">Cases</a>
+  <a href="#contato" onclick="closeMenu()">Contato</a>
+  <a href="#contato" class="mm-cta" onclick="closeMenu()">💬 Fale conosco</a>
+</div>
+
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="sec relative min-h-screen flex items-center pt-16 overflow-hidden gbg">
+  <div class="absolute top-0 inset-x-0 h-[480px] pointer-events-none" style="background:radial-gradient(ellipse 80% 60% at 50% -5%,rgba(120,190,32,.06),transparent 70%)"></div>
+
+  <div class="wrap relative z-10 max-w-6xl mx-auto px-5 py-20 w-full">
+    <div class="hero-wrap flex gap-12 items-center" style="display:flex;align-items:center;gap:3rem">
+
+      <!-- Copy -->
+      <div class="hero-copy" style="flex:1;min-width:0">
+        <div class="stag mb-8" style="animation:fadeUp .5s ease forwards">
+          <span class="ap w-1.5 h-1.5 rounded-full bg-brand inline-block"></span>
+          Florianópolis, SC
+        </div>
+        <h1 class="fd font-extrabold tracking-tight mb-6" style="font-size:clamp(2.6rem,6vw,5rem);line-height:.9;animation:fadeUp .55s .06s ease both">
+          Comunicação<br>
+          <span class="gt">que gera</span><br>
+          resultado
+        </h1>
+        <p class="text-ts text-lg leading-relaxed mb-8 max-w-lg" style="animation:fadeUp .55s .12s ease both">
+          A <strong class="text-tp">Opa Design</strong> combina gestão de redes sociais, criação de sites e tráfego pago com o <strong class="text-tp">Opa Studio</strong> — a plataforma que organiza criativos e aprovações entre agência e cliente.
+        </p>
+        <div class="hbtns flex gap-4 flex-wrap" style="animation:fadeUp .55s .18s ease both">
+          <a href="#servicos" class="bp">Ver serviços →</a>
+          <a href="#studio" class="bg2">Conhecer o Opa Studio</a>
+        </div>
+        <div class="flex items-center gap-3 mt-8" style="animation:fadeUp .55s .24s ease both">
+          <div class="flex -space-x-2">
+            <div class="w-8 h-8 rounded-full border-2 border-bg flex items-center justify-center text-xs fd font-bold" style="background:rgba(120,190,32,.2);color:#78be20;border-color:#0B0F14">C</div>
+            <div class="w-8 h-8 rounded-full border-2 border-bg flex items-center justify-center text-xs fd font-bold" style="background:rgba(96,165,250,.2);color:#60a5fa;border-color:#0B0F14">R</div>
+            <div class="w-8 h-8 rounded-full border-2 border-bg flex items-center justify-center text-xs fd font-bold" style="background:rgba(251,146,60,.2);color:#fb923c;border-color:#0B0F14">M</div>
+          </div>
+          <span class="fm text-xs text-tm">Mais de 50 clientes atendidos em SC</span>
+        </div>
+      </div>
+
+      <!-- Mockup -->
+      <div class="mockup-wrap af" style="flex:1;min-width:0;max-width:500px">
+        <div class="rounded-2xl overflow-hidden border border-border glow-lg" style="background:#111820">
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-border" style="background:#161E28">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(239,68,68,.55)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(234,179,8,.55)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background:rgba(34,197,94,.55)"></span>
+            <span class="mx-auto fm text-xs text-tm rounded px-3 py-1" style="background:rgba(11,15,20,.5);font-size:.68rem">Opa Studio — Painel da agência</span>
+          </div>
+          <div class="p-4 relative overflow-hidden">
+            <div class="scan-l"></div>
+            <!-- Stats -->
+            <div class="stats-g grid gap-2.5 mb-3" style="grid-template-columns:repeat(4,1fr)">
+              <div class="crd rounded-xl p-3 relative overflow-hidden" style="border-radius:.75rem">
+                <div class="abar bg-brand"></div>
+                <div class="fm mb-1" style="font-size:.58rem;color:#4A5A6E">CLIENTES</div>
+                <div class="fd font-bold text-xl">12</div>
+              </div>
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar" style="background:#60a5fa"></div>
+                <div class="fm mb-1" style="font-size:.58rem;color:#4A5A6E">CRIATIVOS</div>
+                <div class="fd font-bold text-xl">84</div>
+              </div>
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar" style="background:#fb923c"></div>
+                <div class="fm mb-1" style="font-size:.58rem;color:#4A5A6E">EM PROD.</div>
+                <div class="fd font-bold text-xl" style="color:#fb923c">23</div>
+              </div>
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar" style="background:#4ade80"></div>
+                <div class="fm mb-1" style="font-size:.58rem;color:#4A5A6E">APROVADOS</div>
+                <div class="fd font-bold text-xl" style="color:#4ade80">61</div>
+              </div>
+            </div>
+            <!-- Client cards -->
+            <div class="clients-g grid gap-2 mb-3" style="grid-template-columns:repeat(3,1fr)">
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar bg-brand"></div>
+                <div class="font-semibold mb-0.5" style="font-size:.75rem">Loja Moda SC</div>
+                <div class="fm text-tm mb-2" style="font-size:.6rem">moda</div>
+                <div class="grid gap-1" style="grid-template-columns:1fr 1fr">
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">TOTAL</div>
+                    <div class="fd font-bold text-sm">18</div>
+                  </div>
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">PEND.</div>
+                    <div class="fd font-bold text-sm text-yellow-400">4</div>
+                  </div>
+                </div>
+              </div>
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar" style="background:#60a5fa"></div>
+                <div class="font-semibold mb-0.5" style="font-size:.75rem">Clínica Vida</div>
+                <div class="fm text-tm mb-2" style="font-size:.6rem">saúde</div>
+                <div class="grid gap-1" style="grid-template-columns:1fr 1fr">
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">TOTAL</div>
+                    <div class="fd font-bold text-sm">11</div>
+                  </div>
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">REV.</div>
+                    <div class="fd font-bold text-sm text-brand">2</div>
+                  </div>
+                </div>
+              </div>
+              <div class="crd rounded-xl p-3 relative overflow-hidden">
+                <div class="abar" style="background:#a78bfa"></div>
+                <div class="font-semibold mb-0.5" style="font-size:.75rem">Tech Startup</div>
+                <div class="fm text-tm mb-2" style="font-size:.6rem">tech</div>
+                <div class="grid gap-1" style="grid-template-columns:1fr 1fr">
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">TOTAL</div>
+                    <div class="fd font-bold text-sm">9</div>
+                  </div>
+                  <div class="rounded-lg p-1.5 text-center" style="background:#0B0F14">
+                    <div class="fm text-tm" style="font-size:.52rem">OK</div>
+                    <div class="fd font-bold text-sm" style="color:#4ade80">7</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Notification -->
+            <div class="rounded-xl px-3 py-2.5 flex items-center gap-2" style="background:rgba(120,190,32,.08);border:1px solid rgba(120,190,32,.18)">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand ap flex-shrink-0"></span>
+              <span class="fm text-brand" style="font-size:.7rem">Novo briefing recebido — Loja Moda SC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ SOBRE ══════════════════ -->
+<section id="sobre" class="sec relative z-10 py-24">
+  <div class="wrap max-w-5xl mx-auto px-5">
+    <div class="g2 grid gap-14 items-center" style="grid-template-columns:1fr 1fr">
+      <div>
+        <span class="stag rv mb-6">Sobre nós</span>
+        <h2 class="fd font-extrabold tracking-tight mt-6 mb-5 rv" style="font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.05">
+          Somos uma agência que une <span class="gt">design e tecnologia</span>
+        </h2>
+        <p class="text-ts leading-relaxed mb-5 rv d1">
+          A <strong class="text-tp">Opa Design</strong> nasceu em Florianópolis com uma missão clara: ajudar negócios locais e digitais a crescer com comunicação estratégica, design de qualidade e presença online que converte.
+        </p>
+        <p class="text-ts leading-relaxed mb-8 rv d2">
+          Com mais de 5 anos de mercado, desenvolvemos o <strong class="text-tp">Opa Studio</strong> — nossa plataforma SaaS que resolve o caos de aprovações e briefings via WhatsApp. Usamos internamente e licenciamos para outras agências.
+        </p>
+        <div class="grid gap-4 rv d2" style="grid-template-columns:1fr 1fr">
+          <div class="crd p-5 text-center">
+            <div class="fd font-extrabold text-4xl text-brand mb-1">5+</div>
+            <div class="fm text-xs text-ts">anos de mercado</div>
+          </div>
+          <div class="crd p-5 text-center">
+            <div class="fd font-extrabold text-4xl text-brand mb-1">50+</div>
+            <div class="fm text-xs text-ts">clientes atendidos</div>
+          </div>
+          <div class="crd p-5 text-center">
+            <div class="fd font-extrabold text-4xl text-brand mb-1">200+</div>
+            <div class="fm text-xs text-ts">projetos entregues</div>
+          </div>
+          <div class="crd p-5 text-center">
+            <div class="fd font-extrabold text-4xl text-brand mb-1">SC</div>
+            <div class="fm text-xs text-ts">Florianópolis</div>
+          </div>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="crd p-8 mb-5 relative overflow-hidden">
+          <div class="abar bg-brand"></div>
+          <div class="text-3xl mb-3">🎨</div>
+          <h3 class="fd font-bold text-xl mb-2">Nossa missão</h3>
+          <p class="text-ts text-sm leading-relaxed">Transformar comunicação caótica em processos claros, resultados mensuráveis e clientes satisfeitos — seja com nossos serviços ou com a tecnologia do Opa Studio.</p>
+        </div>
+        <div class="crd p-8 relative overflow-hidden">
+          <div class="abar" style="background:#60a5fa"></div>
+          <div class="text-3xl mb-3">🚀</div>
+          <h3 class="fd font-bold text-xl mb-2">Nossa visão</h3>
+          <p class="text-ts text-sm leading-relaxed">Ser a referência em Florianópolis para agências e freelancers que querem escalar com organização — usando tecnologia própria e metodologia comprovada.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ SERVIÇOS ══════════════════ -->
+<section id="servicos" class="sec relative z-10 py-24 overflow-hidden">
+  <div class="absolute inset-0 gbg" style="opacity:.3"></div>
+  <div class="wrap relative max-w-5xl mx-auto px-5">
+    <div class="text-center mb-16">
+      <span class="stag rv">Serviços</span>
+      <h2 class="fd font-extrabold tracking-tight mt-6 mb-4 rv" style="font-size:clamp(1.8rem,4vw,2.8rem)">
+        O que a Opa Design<br><span class="gt">faz por você</span>
+      </h2>
+      <p class="text-ts max-w-xl mx-auto rv d1">Você foca no seu negócio. A gente cuida da comunicação, do design e dos resultados.</p>
+    </div>
+
+    <div class="srv-grid g3 grid gap-6">
+      <!-- Redes sociais -->
+      <div class="crd rv p-8 relative overflow-hidden group">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:radial-gradient(circle at top left,rgba(120,190,32,.04),transparent 55%)"></div>
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-5 flex-shrink-0" style="background:rgba(120,190,32,.1);border:1px solid rgba(120,190,32,.2)">📱</div>
+        <h3 class="fd font-bold text-xl mb-3">Gestão de Redes Sociais</h3>
+        <p class="text-ts text-sm leading-relaxed mb-5">Conteúdo estratégico, identidade visual consistente e publicação diária. Sua marca presente onde seu cliente está.</p>
+        <ul class="space-y-2 mb-6">
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Instagram, Facebook e LinkedIn</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Criação de artes e copywriting</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Calendário editorial mensal</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Relatório de desempenho</li>
+        </ul>
+        <a href="#contato" class="bg2 text-sm px-5 py-2.5 w-full justify-center">Solicitar proposta</a>
+      </div>
+      <!-- Sites -->
+      <div class="crd rv d1 p-8 relative overflow-hidden group">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:radial-gradient(circle at top left,rgba(96,165,250,.04),transparent 55%)"></div>
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-5" style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2)">🌐</div>
+        <h3 class="fd font-bold text-xl mb-3">Criação de Sites</h3>
+        <p class="text-ts text-sm leading-relaxed mb-5">Sites que convertem — institucionais, landing pages e lojas virtuais com design premium, rápidos e responsivos.</p>
+        <ul class="space-y-2 mb-6">
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Landing pages de alta conversão</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Sites institucionais</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> E-commerce</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> SEO técnico e performance</li>
+        </ul>
+        <a href="#contato" class="bg2 text-sm px-5 py-2.5 w-full justify-center">Solicitar proposta</a>
+      </div>
+      <!-- Tráfego -->
+      <div class="crd rv d2 p-8 relative overflow-hidden group">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style="background:radial-gradient(circle at top left,rgba(167,139,250,.04),transparent 55%)"></div>
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-5" style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2)">📊</div>
+        <h3 class="fd font-bold text-xl mb-3">Tráfego Pago</h3>
+        <p class="text-ts text-sm leading-relaxed mb-5">Campanhas no Google Ads e Meta Ads com foco total em ROI. Mais leads qualificados, menor custo por resultado.</p>
+        <ul class="space-y-2 mb-6">
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Google Ads (Search, Display, YouTube)</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Meta Ads (Feed, Stories, Reels)</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Configuração de pixels e conversões</li>
+          <li class="flex items-center gap-2 text-xs text-ts fm"><span class="text-brand">▸</span> Relatório semanal de performance</li>
+        </ul>
+        <a href="#contato" class="bg2 text-sm px-5 py-2.5 w-full justify-center">Solicitar proposta</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ OPA STUDIO ══════════════════ -->
+<section id="studio" class="sec relative z-10 py-24">
+  <div class="wrap max-w-5xl mx-auto px-5">
+    <div class="studio-wrap flex gap-14 items-center" style="display:flex;align-items:center;gap:3.5rem">
+      <!-- Text -->
+      <div style="flex:1;min-width:0">
+        <span class="stag rv">Tecnologia própria</span>
+        <h2 class="fd font-extrabold tracking-tight mt-6 mb-5 rv" style="font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.05">
+          Conheça o<br><span class="gt">Opa Studio</span>
+        </h2>
+        <p class="text-ts leading-relaxed mb-5 rv d1">
+          Desenvolvemos uma plataforma SaaS para resolver o problema que mais atrasava nossa própria operação: o caos de briefings e aprovações via WhatsApp.
+        </p>
+        <p class="text-ts leading-relaxed mb-8 rv d1">
+          O <strong class="text-tp">Opa Studio</strong> organiza tudo em um lugar — briefings estruturados, upload de arquivos, aprovação com nota e histórico completo por cliente.
+        </p>
+        <div class="space-y-3 mb-8 rv d2">
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand text-xs flex-shrink-0">✓</span><span class="text-ts text-sm">Briefing estruturado com upload de referências</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand text-xs flex-shrink-0">✓</span><span class="text-ts text-sm">Aprovação do cliente com estrelas e comentários</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand text-xs flex-shrink-0">✓</span><span class="text-ts text-sm">IA integrada — legendas, hashtags e DALL-E 3</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand text-xs flex-shrink-0">✓</span><span class="text-ts text-sm">Analytics do Meta Ads por cliente</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center text-brand text-xs flex-shrink-0">✓</span><span class="text-ts text-sm">Publicação direta no Instagram e Facebook</span></div>
+        </div>
+        <div class="flex flex-wrap gap-3 rv d2">
+          <a href="https://sistema.opadesign.com.br/register.php" class="bp">🚀 Testar grátis por 7 dias</a>
+          <a href="https://sistema.opadesign.com.br" class="bg2">Ver planos →</a>
+        </div>
+      </div>
+      <!-- Pricing cards preview -->
+      <div class="rv d2" style="flex:1;min-width:0;max-width:400px">
+        <div class="space-y-4">
+          <div class="crd p-6 relative overflow-hidden hover:-translate-y-1 transition-transform">
+            <div class="abar" style="background:#60a5fa"></div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="fd font-bold text-lg" style="color:#60a5fa">START</span>
+              <span class="fm text-xs text-tm">Para sair do caos</span>
+            </div>
+            <div class="fd font-extrabold text-3xl mb-1">R$97<span class="text-ts font-normal text-base fm">/mês</span></div>
+            <div class="fm text-xs text-tm">3 clientes · 30 criativos · Analytics</div>
+          </div>
+          <div class="rounded-2xl p-6 border-2 border-brand relative overflow-hidden" style="background:#161E28;box-shadow:0 0 40px rgba(120,190,32,.09)">
+            <div class="absolute top-2 right-3 bg-brand text-bg fm font-bold text-xs px-2 py-0.5 rounded-full" style="color:#0B0F14">POPULAR</div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="fd font-bold text-lg text-brand">PRO</span>
+              <span class="fm text-xs text-tm">Para crescer</span>
+            </div>
+            <div class="fd font-extrabold text-3xl text-brand mb-1">R$197<span class="text-ts font-normal text-base fm">/mês</span></div>
+            <div class="fm text-xs text-tm">10 clientes · 100 criativos · IA</div>
+          </div>
+          <div class="crd p-6 relative overflow-hidden hover:-translate-y-1 transition-transform">
+            <div class="abar" style="background:#fb923c"></div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="fd font-bold text-lg" style="color:#fb923c">AGÊNCIA</span>
+              <span class="fm text-xs text-tm">Para escalar</span>
+            </div>
+            <div class="fd font-extrabold text-3xl mb-1">R$347<span class="text-ts font-normal text-base fm">/mês</span></div>
+            <div class="fm text-xs text-tm">Ilimitado · IA · Suporte prioritário</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ DEPOIMENTOS ══════════════════ -->
+<section id="depoimentos" class="sec relative z-10 py-24 overflow-hidden">
+  <div class="absolute inset-0 gbg" style="opacity:.25"></div>
+  <div class="wrap relative max-w-5xl mx-auto px-5">
+    <div class="text-center mb-14">
+      <span class="stag rv">Cases e depoimentos</span>
+      <h2 class="fd font-extrabold tracking-tight mt-6 rv" style="font-size:clamp(1.8rem,4vw,2.8rem)">
+        O que nossos clientes<br><span class="gt">dizem sobre nós</span>
+      </h2>
+    </div>
+    <div class="dep-g g3 grid gap-6">
+      <div class="crd rv p-8 hover:border-brand/25 transition-all">
+        <div class="fd text-5xl leading-none mb-4 text-brand">"</div>
+        <p class="text-ts text-sm leading-relaxed mb-6 italic">A Opa Design transformou nossa presença no Instagram. Em 3 meses dobramos o engajamento e começamos a receber leads direto pelo direct. Profissionalismo e resultado de verdade.</p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center fd font-bold text-sm text-brand" style="background:rgba(120,190,32,.15);border:1px solid rgba(120,190,32,.25)">A</div>
+          <div><div class="font-semibold text-sm">Ana Paula Lima</div><div class="fm text-xs text-tm">Proprietária · Boutique Ana</div><div class="text-brand text-xs mt-0.5">★★★★★</div></div>
+        </div>
+      </div>
+      <div class="crd rv d1 p-8 hover:border-brand/25 transition-all">
+        <div class="fd text-5xl leading-none mb-4 text-brand">"</div>
+        <p class="text-ts text-sm leading-relaxed mb-6 italic">O site que a Opa entregou ficou muito acima das expectativas. Rápido, bonito e já chegou bem posicionado no Google. As vendas online subiram 40% no primeiro mês.</p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center fd font-bold text-sm" style="color:#60a5fa;background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.25)">M</div>
+          <div><div class="font-semibold text-sm">Marcos Ferreira</div><div class="fm text-xs text-tm">CEO · TechSul Soluções</div><div class="text-brand text-xs mt-0.5">★★★★★</div></div>
+        </div>
+      </div>
+      <div class="crd rv d2 p-8 hover:border-brand/25 transition-all">
+        <div class="fd text-5xl leading-none mb-4 text-brand">"</div>
+        <p class="text-ts text-sm leading-relaxed mb-6 italic">O Opa Studio resolveu um problema que eu nem sabia que tinha. Briefings claros, aprovação rápida, sem WhatsApp. Minha operação ficou muito mais profissional e meus clientes adoram.</p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center fd font-bold text-sm" style="color:#a78bfa;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.25)">C</div>
+          <div><div class="font-semibold text-sm">Carol Menezes</div><div class="fm text-xs text-tm">Social Media · Agência CM</div><div class="text-brand text-xs mt-0.5">★★★★★</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ CONTATO ══════════════════ -->
+<section id="contato" class="sec relative z-10 py-24">
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(120,190,32,.05),transparent 65%)"></div>
+  <div class="wrap relative max-w-4xl mx-auto px-5 text-center">
+    <span class="stag rv">Contato</span>
+    <h2 class="fd font-extrabold tracking-tight mt-6 mb-4 rv" style="font-size:clamp(2rem,5vw,3.5rem);line-height:.97">
+      Vamos conversar<br><span class="gt">sobre seu projeto?</span>
+    </h2>
+    <p class="text-ts text-lg mb-12 rv d1 max-w-xl mx-auto leading-relaxed">
+      Seja para contratar um serviço, conhecer o Opa Studio ou tirar uma dúvida — estamos prontos para responder.
+    </p>
+
+    <div class="cta-btns flex justify-center gap-4 flex-wrap rv d2 mb-12">
+      <a href="https://wa.me/5548999999999?text=Olá! Vim pelo site da Opa Design e gostaria de saber mais sobre os serviços." target="_blank" class="bwa">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.118 1.528 5.852L0 24l6.335-1.509A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.497-5.18-1.37l-.371-.22-3.861.92.984-3.773-.242-.388A10 10 0 0112 2c5.514 0 10 4.486 10 10s-4.486 10-10 10z"/></svg>
+        WhatsApp
+      </a>
+      <a href="mailto:contato@opadesign.com.br" class="bg2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        contato@opadesign.com.br
+      </a>
+      <a href="https://sistema.opadesign.com.br/register.php" class="bp">🚀 Testar Opa Studio grátis</a>
+    </div>
+
+    <!-- Localização -->
+    <div class="rv d3 crd inline-flex items-center gap-3 px-6 py-4">
+      <span class="text-2xl">📍</span>
+      <div class="text-left">
+        <div class="fd font-semibold text-sm">Florianópolis, SC</div>
+        <div class="fm text-xs text-tm">Atendimento remoto em todo o Brasil</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="border-t border-border relative z-10 py-14">
+  <div class="max-w-6xl mx-auto px-5">
+    <div class="ft-grid grid gap-10 mb-10" style="grid-template-columns:1.5fr 1fr 1fr 1fr">
+      <!-- Brand -->
+      <div>
+        <a href="#" class="inline-block mb-4">
+          <img src="/logo_opa.jpg" alt="Opa Design" class="h-10 w-auto rounded object-contain" onerror="this.style.display='none'">
+        </a>
+        <p class="text-tm text-sm leading-relaxed mb-5">Comunicação, design e tecnologia para negócios que querem crescer com presença e resultado.</p>
+        <a href="https://wa.me/5548999999999" target="_blank" class="inline-flex items-center gap-2 text-sm text-ts hover:text-brand transition-colors">
+          <span style="color:#25D366">●</span> WhatsApp
+        </a>
+      </div>
+      <!-- Serviços -->
+      <div>
+        <div class="fm text-xs text-tm tracking-widest uppercase mb-4">Serviços</div>
+        <div class="space-y-2.5">
+          <a href="#servicos" class="block text-ts hover:text-tp text-sm transition-colors">Redes Sociais</a>
+          <a href="#servicos" class="block text-ts hover:text-tp text-sm transition-colors">Criação de Sites</a>
+          <a href="#servicos" class="block text-ts hover:text-tp text-sm transition-colors">Tráfego Pago</a>
+          <a href="#contato" class="block text-ts hover:text-tp text-sm transition-colors">Solicitar proposta</a>
+        </div>
+      </div>
+      <!-- Opa Studio -->
+      <div>
+        <div class="fm text-xs text-tm tracking-widest uppercase mb-4">Opa Studio</div>
+        <div class="space-y-2.5">
+          <a href="#studio" class="block text-ts hover:text-tp text-sm transition-colors">O que é</a>
+          <a href="https://sistema.opadesign.com.br" class="block text-ts hover:text-tp text-sm transition-colors">Ver planos</a>
+          <a href="https://sistema.opadesign.com.br/register.php" class="block text-ts hover:text-tp text-sm transition-colors">Criar conta grátis</a>
+          <a href="https://sistema.opadesign.com.br/login.php" class="block text-ts hover:text-tp text-sm transition-colors">Entrar no sistema</a>
+        </div>
+      </div>
+      <!-- Empresa -->
+      <div>
+        <div class="fm text-xs text-tm tracking-widest uppercase mb-4">Empresa</div>
+        <div class="space-y-2.5">
+          <a href="#sobre" class="block text-ts hover:text-tp text-sm transition-colors">Sobre nós</a>
+          <a href="#depoimentos" class="block text-ts hover:text-tp text-sm transition-colors">Cases</a>
+          <a href="#contato" class="block text-ts hover:text-tp text-sm transition-colors">Contato</a>
+          <a href="mailto:contato@opadesign.com.br" class="block text-ts hover:text-tp text-sm transition-colors">Email</a>
+        </div>
+      </div>
+    </div>
+    <div class="ft-bot border-t border-border pt-8 flex items-center justify-between gap-4">
+      <p class="fm text-xs text-tm">© 2025 Opa Design · Florianópolis, SC · CNPJ 00.000.000/0001-00</p>
+      <div class="flex gap-5">
+        <a href="#" class="fm text-xs text-tm hover:text-ts transition-colors">Privacidade</a>
+        <a href="#" class="fm text-xs text-tm hover:text-ts transition-colors">Termos</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').style.borderBottomColor =
+    window.scrollY > 40 ? 'rgba(30,42,56,.7)' : 'rgba(30,42,56,.3)';
+}, { passive: true });
+
+// Mobile menu
+function toggleMenu() {
+  const btn  = document.getElementById('hamBtn');
+  const menu = document.getElementById('mobMenu');
+  btn.classList.toggle('open');
+  menu.classList.toggle('open');
+  document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+}
+function closeMenu() {
+  document.getElementById('hamBtn').classList.remove('open');
+  document.getElementById('mobMenu').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('mobMenu');
+  const btn  = document.getElementById('hamBtn');
+  if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) { e.preventDefault(); closeMenu(); t.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>

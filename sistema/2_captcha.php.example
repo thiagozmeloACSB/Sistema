@@ -1,0 +1,99 @@
+<?php
+/**
+ * MÓDULO 2 — CAPTCHA no Formulário de Cadastro
+ * Opa Studio Security — PHP Puro
+ * Usa hCaptcha (gratuito e sem rastreamento do Google)
+ * 
+ * Passo 1: Crie conta em https://www.hcaptcha.com/
+ * Passo 2: Substitua as chaves abaixo
+ * Passo 3: Adicione o widget no HTML do formulário
+ * Passo 4: Valide no backend antes de salvar o cadastro
+ */
+
+// ─── Configuração ────────────────────────────────────────────────────────────
+define('HCAPTCHA_SITE_KEY',   'PREENCHER');   // chave pública (vai no HTML)
+define('HCAPTCHA_SECRET_KEY', 'PREENCHER'); // chave privada (fica no servidor)
+define('HCAPTCHA_VERIFY_URL', 'https://hcaptcha.com/siteverify');
+
+/**
+ * Valida o token enviado pelo formulário
+ * Retorna ['ok' => bool, 'message' => string]
+ */
+function verifyCaptcha(string $token, string $remoteIp = ''): array {
+    if (empty($token)) {
+        return ['ok' => false, 'message' => 'Por favor, complete o CAPTCHA.'];
+    }
+
+    $data = http_build_query([
+        'secret'   => HCAPTCHA_SECRET_KEY,
+        'response' => $token,
+        'remoteip' => $remoteIp ?: ($_SERVER['REMOTE_ADDR'] ?? ''),
+    ]);
+
+    $options = [
+        'http' => [
+            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => $data,
+            'timeout' => 5,
+        ],
+    ];
+
+    $context  = stream_context_create($options);
+    $result   = @file_get_contents(HCAPTCHA_VERIFY_URL, false, $context);
+
+    if ($result === false) {
+        // Se não conseguir verificar, deixa passar (não bloqueia usuário por falha de rede)
+        error_log('[CAPTCHA] Falha ao contactar hCaptcha — permitindo passagem.');
+        return ['ok' => true, 'message' => 'Verificação indisponível.'];
+    }
+
+    $json = json_decode($result, true);
+
+    if (!empty($json['success'])) {
+        return ['ok' => true, 'message' => 'CAPTCHA válido.'];
+    }
+
+    $errorCodes = $json['error-codes'] ?? [];
+    error_log('[CAPTCHA] Falhou: ' . implode(', ', $errorCodes));
+
+    return ['ok' => false, 'message' => 'Verificação de segurança falhou. Tente novamente.'];
+}
+
+// ─── EXEMPLO DE USO NO BACKEND ───────────────────────────────────────────────
+/*
+require 'security/2_captcha.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token  = $_POST['h-captcha-response'] ?? '';
+    $result = verifyCaptcha($token);
+
+    if (!$result['ok']) {
+        http_response_code(422);
+        echo json_encode(['error' => $result['message']]);
+        exit;
+    }
+    // ...continua o cadastro
+}
+*/
+
+?>
+<!-- ─── ADICIONE ISTO NO HTML DO FORMULÁRIO ──────────────────────────────────
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+<form method="POST" action="/cadastro.php">
+    <input type="text"  name="empresa" placeholder="Nome da empresa" required>
+    <input type="email" name="email"   placeholder="E-mail" required>
+
+    <!-- Widget hCaptcha -->
+    <div class="h-captcha" data-sitekey="<?= HCAPTCHA_SITE_KEY ?>"></div>
+
+    <button type="submit">Criar conta</button>
+</form>
+</body>
+</html>
+-->
